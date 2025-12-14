@@ -1,0 +1,12 @@
+[project]
+name = "todoapp-craft-demo"
+version = "1.0.0"
+description = "数据可视化工具 - 3D图表展示"
+requires-python = ">=3.9,<3.13"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.vercel]
+python-version = "3.12"

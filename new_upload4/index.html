@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化工具 - 全新版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+            .subtitle {
+                font-size: 1.1em;
+                opacity: 0.9;
+            }
+
+            header a:hover {
+                background: rgba(255,255,255,0.3) !important;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+            }
+
+        /* 主要布局 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: calc(100vh - 160px);
+        }
+
+        /* 各个板块 */
+        .section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e3f2fd;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-section {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .variable-section {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        .chart-controls-section {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .data-display-section {
+            grid-column: 2;
+            grid-row: 3;
+            background: white;
+            max-height: 400px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 按钮样式 */
+        button {
+            background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(54, 209, 220, 0.3);
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        /* 状态栏 */
+        .status {
+            padding: 15px 30px;
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: 500;
+            border-left: 4px solid #1976d2;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            padding: 30px;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+            margin: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* 变量选择 */
+        .variable-box {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px;
+            margin-bottom: 15px;
+        }
+
+        .variable-box h3 {
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .variable-list {
+            list-style: none;
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+        }
+
+        .variable-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            cursor: move;
+            transition: all 0.3s ease;
+            user-select: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .variable-item:hover {
+            background: #e3f2fd;
+            border-color: #36d1dc;
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(54, 209, 220, 0.2);
+        }
+
+        .variable-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .variable-name {
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .variable-type {
+            font-size: 11px;
+            color: #6c757d;
+            font-weight: normal;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .drop-zone {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .drop-zone.drag-over {
+            background: #e3f2fd;
+            border-color: #36d1dc;
+            color: #36d1dc;
+        }
+
+        /* 数据表格 */
+        .data-table-container {
+            flex: 1;
+            overflow: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 600px;
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .empty-data-message {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        .loading::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #36d1dc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+                gap: 15px;
+            }
+            
+            .section {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 数据可视化工具</h1>
+            <p class="subtitle">智能拖拽式变量选择 - 全新版本</p>
+            <div style="margin-top: 20px;">
+                <a href="高级分析板块.html" style="background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;">
+                    🔬 进入高级分析板块
+                </a>
+            </div>
+        </header>
+        
+        <div class="main-layout">
+            <!-- 上传数据板块 -->
+            <section class="section upload-section">
+                <h2>📤 上传数据</h2>
+                <button onclick="document.getElementById('fileInput').click()" id="uploadButton">
+                    📁 上传数据文件
+                </button>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;" onchange="handleFileUpload(event)">
+                <div id="uploadDebug" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                <div style="margin-top: 5px; font-size: 12px; color: #999;">
+                    支持格式：CSV (.csv)、Excel (.xlsx, .xls)
+                </div>
+                
+                <button onclick="loadSampleData()">
+                    🎲 使用示例数据
+                </button>
+            </section>
+            
+            <!-- 变量选择板块 -->
+            <section class="section variable-section">
+                <h2>🎯 变量选择</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="variable-box">
+                        <h3>📋 所有变量</h3>
+                        <small style="color: #6c757d;">💡 拖拽变量到右侧</small>
+                        <ul class="variable-list" id="all-variables">
+                            <li class="empty-data-message">请先上传数据</li>
+                        </ul>
+                    </div>
+                    <div class="variable-box">
+                        <h3>📊 图表变量</h3>
+                        <div class="drop-zone" id="chart-drop-zone">
+                            拖拽变量到这里生成图表
+                        </div>
+                        <ul class="variable-list" id="selected-variables" style="margin-top: 15px;">
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 图表控制板块 -->
+            <section class="section chart-controls-section">
+                <h2>⚙️ 图表设置</h2>
+                <select id="chartType" onchange="updateChartType()">
+                    <option value="bar">📊 柱状图</option>
+                    <option value="line">📈 折线图</option>
+                    <option value="pie">🥧 饼图</option>
+                    <option value="scatter">⚡ 散点图</option>
+                    <option value="scatter3d">🌐 3D散点图</option>
+                    <option value="surface">🎨 3D曲面图</option>
+                    <option value="bubble3d">🫧 3D气泡图</option>
+                </select>
+                
+                <button onclick="generateChart()">
+                    ✨ 生成图表
+                </button>
+            </section>
+            
+            <!-- 数据展示板块 -->
+            <section class="section data-display-section">
+                <h2>📋 数据预览</h2>
+                <div class="data-table-container" id="dataPreviewContainer">
+                    <div class="empty-data-message">
+                        📊 请上传数据文件查看数据预览
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status" id="status">
+            ✅ 全新版本已就绪 - 请上传数据开始
+        </div>
+        
+        <!-- 图表展示区域 -->
+        <div class="chart-container">
+            <div class="loading" id="loading">
+                <p>👆 请上传数据文件开始分析</p>
+            </div>
+            <canvas id="chartCanvas" style="display: none; max-width: 100%; height: auto;"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script>
+        // 全局变量
+        let currentData = null;
+        let currentChart = null;
+        let draggedElement = null;
+
+        // 更新状态
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // 处理文件上传
+        function handleFileUpload(event) {
+            console.log('🎯 handleFileUpload 被调用');
+            
+            const debugDiv = document.getElementById('uploadDebug');
+            const fileInput = event.target;
+            
+            debugDiv.innerHTML = '🔍 开始调试...<br>';
+            debugDiv.innerHTML += `文件输入元素：${fileInput ? '✅ 找到' : '❌ 未找到'}<br>`;
+            
+            const files = fileInput.files;
+            debugDiv.innerHTML += `文件列表：${files ? files.length + ' 个文件' : '无文件'}<br>`;
+            
+            const file = files[0];
+            if (!file) {
+                debugDiv.innerHTML += '❌ 没有选择文件<br>';
+                console.log('没有选择文件');
+                return;
+            }
+            
+            console.log('选择的文件：', file.name, file.size, 'bytes');
+            debugDiv.innerHTML += `✅ 选择了文件：${file.name} (${file.size} bytes)<br>`;
+            
+            const fileName = file.name.toLowerCase();
+            if (!fileName.endsWith('.csv') && !fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+                const errorMsg = '❌ 请上传支持的文件格式（CSV、Excel .xlsx、.xls）';
+                updateStatus(errorMsg);
+                debugDiv.innerHTML += errorMsg + '<br>';
+                return;
+            }
+            
+            // 判断文件类型
+            let fileType = 'csv';
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                fileType = 'excel';
+            }
+            
+            debugDiv.innerHTML += `📄 检测到文件类型：${fileType}<br>`;
+            
+            if (file.size === 0) {
+                const errorMsg = '❌ 文件为空，请选择有效的CSV文件';
+                updateStatus(errorMsg);
+                debugDiv.innerHTML += errorMsg + '<br>';
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) { // 10MB限制
+                const errorMsg = '❌ 文件过大，请选择小于10MB的CSV文件';
+                updateStatus(errorMsg);
+                debugDiv.innerHTML += errorMsg + '<br>';
+                return;
+            }
+            
+            updateStatus('📤 正在读取CSV文件...');
+            debugDiv.innerHTML += '📤 开始读取文件...<br>';
+            
+            // 尝试多种编码方式读取文件
+            const tryEncodings = ['UTF-8', 'GBK', 'GB2312', 'Big5'];
+            let currentEncodingIndex = 0;
+            
+            if (fileType === 'excel') {
+                // 处理Excel文件
+                processExcelFile(file, debugDiv);
+            } else {
+                // 处理CSV文件
+                processCSVFile(file, debugDiv);
+            }
+        }
+        
+        // 处理CSV文件
+        function processCSVFile(file, debugDiv) {
+            // 尝试多种编码方式读取文件
+            const tryEncodings = ['UTF-8', 'GBK', 'GB2312', 'Big5'];
+            let currentEncodingIndex = 0;
+            
+            function tryNextEncoding() {
+                if (currentEncodingIndex >= tryEncodings.length) {
+                    updateStatus('❌ 所有编码尝试都失败，文件可能有损坏');
+                    debugDiv.innerHTML += '❌ 所有编码尝试失败<br>';
+                    return;
+                }
+                
+                const encoding = tryEncodings[currentEncodingIndex];
+                debugDiv.innerHTML += `🔤 尝试编码：${encoding}...<br>`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        debugDiv.innerHTML += `📄 使用 ${encoding} 读取完成，长度：${text.length} 字符<br>`;
+                        console.log(`使用 ${encoding} 编码读取，长度：`, text.length, '字符');
+                        console.log('文件前200字符：', text.substring(0, 200));
+                        
+                        // 检查是否包含乱码字符
+                        const hasGarbledChars = /[^\x20-\x7E\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(text);
+                        if (hasGarbledChars && currentEncodingIndex < tryEncodings.length - 1) {
+                            debugDiv.innerHTML += `❌ ${encoding} 编码可能产生乱码，尝试下一种编码...<br>`;
+                            currentEncodingIndex++;
+                            tryNextEncoding();
+                            return;
+                        }
+                        
+                        debugDiv.innerHTML += `✅ 使用 ${encoding} 编码成功读取<br>`;
+                        
+                        if (!text || text.trim().length === 0) {
+                            throw new Error('文件内容为空');
+                        }
+                        
+                        debugDiv.innerHTML += '🔄 开始解析CSV...<br>';
+                        currentData = parseCSV(text);
+                        
+                        if (!currentData || currentData.length === 0) {
+                            throw new Error('解析后的数据为空');
+                        }
+                        
+                        const headers = Object.keys(currentData[0]);
+                        const successMsg = `✅ 成功加载CSV文件（${encoding}编码）：${currentData.length} 行，${headers.length} 列`;
+                        updateStatus(successMsg);
+                        debugDiv.innerHTML += successMsg + '<br>';
+                        console.log('解析的列名：', headers);
+                        console.log('第一行数据：', currentData[0]);
+                        
+                        debugDiv.innerHTML += '🔄 更新界面...<br>';
+                        updateDataPreview();
+                        displayVariables();
+                        
+                        debugDiv.innerHTML += '🎉 处理完成！<br>';
+                        
+                    } catch (error) {
+                        console.error(`使用 ${encoding} 编码解析失败：`, error);
+                        if (currentEncodingIndex < tryEncodings.length - 1) {
+                            debugDiv.innerHTML += `❌ ${encoding} 编码解析失败，尝试下一种编码...<br>`;
+                            currentEncodingIndex++;
+                            tryNextEncoding();
+                        } else {
+                            const errorMsg = `❌ 所有编码尝试都失败，最后错误：${error.message}`;
+                            updateStatus(errorMsg);
+                            debugDiv.innerHTML += errorMsg + '<br>';
+                        }
+                    }
+                };
+                
+                reader.onerror = function() {
+                    console.error(`使用 ${encoding} 编码读取错误`);
+                    if (currentEncodingIndex < tryEncodings.length - 1) {
+                        debugDiv.innerHTML += `❌ ${encoding} 编码读取错误，尝试下一种编码...<br>`;
+                        currentEncodingIndex++;
+                        tryNextEncoding();
+                    } else {
+                        const errorMsg = '❌ 所有编码读取都失败，请重试';
+                        updateStatus(errorMsg);
+                        debugDiv.innerHTML += errorMsg + '<br>';
+                    }
+                };
+                
+                reader.readAsText(file, encoding);
+            }
+            
+            tryNextEncoding();
+        }
+        
+        // 处理Excel文件
+        function processExcelFile(file, debugDiv) {
+            debugDiv.innerHTML += '📊 开始处理Excel文件...<br>';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    debugDiv.innerHTML += '📄 Excel文件读取完成<br>';
+                    
+                    // 使用SheetJS解析Excel文件
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    debugDiv.innerHTML += `📋 检测到工作表数量：${workbook.SheetNames.length}<br>`;
+                    console.log('Excel工作表：', workbook.SheetNames);
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    debugDiv.innerHTML += `📑 使用工作表：${firstSheetName}<br>`;
+                    
+                    // 转换为JSON格式
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '' // 空单元格用空字符串填充
+                    });
+                    
+                    if (jsonData.length < 2) {
+                        throw new Error('Excel文件至少需要标题行和一行数据');
+                    }
+                    
+                    // 获取标题行
+                    const headers = jsonData[0].map(header => String(header).trim());
+                    debugDiv.innerHTML += `📝 检测到列数：${headers.length}<br>`;
+                    console.log('Excel列名：', headers);
+                    
+                    // 处理数据行
+                    const processedData = [];
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        const rowData = {};
+                        
+                        // 跳过空行
+                        if (row.every(cell => cell === '' || cell === null || cell === undefined)) {
+                            continue;
+                        }
+                        
+                        headers.forEach((header, index) => {
+                            let value = row[index] || '';
+                            
+                            // 转换为字符串并去除两端空格
+                            if (value !== null && value !== undefined) {
+                                value = String(value).trim();
+                                
+                                // 尝试转换为数字
+                                if (value && !isNaN(value) && value !== '') {
+                                    const numValue = parseFloat(value);
+                                    rowData[header] = !isNaN(numValue) ? numValue : value;
+                                } else {
+                                    rowData[header] = value;
+                                }
+                            } else {
+                                rowData[header] = '';
+                            }
+                        });
+                        
+                        processedData.push(rowData);
+                    }
+                    
+                    if (processedData.length === 0) {
+                        throw new Error('Excel文件没有有效的数据行');
+                    }
+                    
+                    currentData = processedData;
+                    
+                    const successMsg = `✅ 成功加载Excel文件：${currentData.length} 行，${headers.length} 列`;
+                    updateStatus(successMsg);
+                    debugDiv.innerHTML += successMsg + '<br>';
+                    console.log('解析的列名：', headers);
+                    console.log('第一行数据：', currentData[0]);
+                    
+                    debugDiv.innerHTML += '🔄 更新界面...<br>';
+                    updateDataPreview();
+                    displayVariables();
+                    
+                    debugDiv.innerHTML += '🎉 Excel文件处理完成！<br>';
+                    
+                } catch (error) {
+                    console.error('Excel文件处理错误：', error);
+                    const errorMsg = `❌ Excel文件处理失败：${error.message}`;
+                    updateStatus(errorMsg);
+                    debugDiv.innerHTML += errorMsg + '<br>';
+                }
+            };
+            
+            reader.onerror = function() {
+                console.error('Excel文件读取错误');
+                const errorMsg = '❌ Excel文件读取失败，请重试';
+                updateStatus(errorMsg);
+                debugDiv.innerHTML += errorMsg + '<br>';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 强化的CSV解析器
+        function parseCSV(text) {
+            text = text.replace(/^\uFEFF/, ''); // 移除BOM
+            
+            // 标准化换行符
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            if (lines.length < 2) {
+                throw new Error('CSV文件至少需要标题行和一行数据');
+            }
+            
+            // 改进的CSV解析，支持引号包围的字段
+            const parseCSVLine = (line) => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                let i = 0;
+                
+                while (i < line.length) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        if (inQuotes && line[i + 1] === '"') {
+                            // 转义的引号
+                            current += '"';
+                            i += 2;
+                        } else {
+                            // 开始或结束引号
+                            inQuotes = !inQuotes;
+                            i++;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        // 字段分隔符
+                        result.push(current.trim());
+                        current = '';
+                        i++;
+                    } else {
+                        current += char;
+                        i++;
+                    }
+                }
+                
+                // 添加最后一个字段
+                result.push(current.trim());
+                return result;
+            };
+            
+            // 解析标题行
+            const headers = parseCSVLine(lines[0]);
+            
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                
+                // 跳过空行
+                if (values.every(v => v === '')) {
+                    continue;
+                }
+                
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    let value = values[index] || '';
+                    
+                    // 移除字段两端的引号
+                    value = value.replace(/^["']|["']$/g, '');
+                    
+                    // 尝试转换为数字
+                    if (value && !isNaN(value) && value.trim() !== '') {
+                        const numValue = parseFloat(value);
+                        row[header] = !isNaN(numValue) ? numValue : value;
+                    } else {
+                        row[header] = value;
+                    }
+                });
+                
+                data.push(row);
+            }
+            
+            if (data.length === 0) {
+                throw new Error('CSV文件没有有效的数据行');
+            }
+            
+            console.log(`成功解析CSV：${data.length} 行数据，${headers.length} 列：`, headers);
+            return data;
+        }
+
+        // 加载示例数据
+        function loadSampleData() {
+            currentData = [
+                { 月份: '一月', 销售额: 12000, 成本: 8000, 利润: 4000, 客户数: 150, 满意度: 85, 市场份额: 12.5 },
+                { 月份: '二月', 销售额: 15000, 成本: 9000, 利润: 6000, 客户数: 180, 满意度: 88, 市场份额: 14.2 },
+                { 月份: '三月', 销售额: 18000, 成本: 10000, 利润: 8000, 客户数: 220, 满意度: 92, 市场份额: 16.8 },
+                { 月份: '四月', 销售额: 16000, 成本: 9500, 利润: 6500, 客户数: 200, 满意度: 87, 市场份额: 15.1 },
+                { 月份: '五月', 销售额: 20000, 成本: 11000, 利润: 9000, 客户数: 250, 满意度: 90, 市场份额: 18.3 },
+                { 月份: '六月', 销售额: 22000, 成本: 12000, 利润: 10000, 客户数: 280, 满意度: 93, 市场份额: 20.1 },
+                { 月份: '七月', 销售额: 25000, 成本: 13000, 利润: 12000, 客户数: 320, 满意度: 95, 市场份额: 22.5 },
+                { 月份: '八月', 销售额: 23000, 成本: 12500, 利润: 10500, 客户数: 300, 满意度: 91, 市场份额: 21.2 }
+            ];
+            
+            updateStatus(`✅ 已加载示例数据：${currentData.length} 个月份`);
+            updateDataPreview();
+            displayVariables();
+        }
+
+        // 更新数据预览
+        function updateDataPreview() {
+            const container = document.getElementById('dataPreviewContainer');
+            
+            if (!currentData || currentData.length === 0) {
+                container.innerHTML = '<div class="empty-data-message">📊 请上传数据文件查看数据预览</div>';
+                return;
+            }
+            
+            const columns = Object.keys(currentData[0]);
+            const maxRows = 10;
+            const displayData = currentData.slice(0, maxRows);
+            
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+            `;
+            
+            columns.forEach(column => {
+                tableHTML += `<th>${column}</th>`;
+            });
+            
+            tableHTML += `
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            displayData.forEach(row => {
+                tableHTML += '<tr>';
+                columns.forEach(column => {
+                    const value = row[column];
+                    tableHTML += `<td title="${value !== null && value !== undefined ? value : ''}">${value !== null && value !== undefined ? value : ''}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            if (currentData.length > maxRows) {
+                tableHTML += `<div style="text-align: center; padding: 10px; color: #6c757d; border-top: 1px solid #e9ecef;">
+                    📊 显示前 ${maxRows} 行，共 ${currentData.length} 行数据
+                </div>`;
+            }
+            
+            container.innerHTML = tableHTML;
+        }
+
+        // 显示变量列表
+        function displayVariables() {
+            console.log('开始显示变量，当前数据：', currentData);
+            
+            if (!currentData || currentData.length === 0) {
+                console.error('没有数据可显示');
+                updateStatus('❌ 没有数据可显示');
+                return;
+            }
+            
+            const container = document.getElementById('all-variables');
+            if (!container) {
+                console.error('找不到变量容器元素');
+                return;
+            }
+            
+            const variables = Object.keys(currentData[0]);
+            console.log('检测到的变量：', variables);
+            
+            if (variables.length === 0) {
+                console.error('没有检测到变量');
+                updateStatus('❌ 没有检测到变量');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            variables.forEach((variable, index) => {
+                const firstValue = currentData[0][variable];
+                const isNumeric = typeof firstValue === 'number';
+                
+                // 检查该列是否所有值都是数字
+                let allNumeric = true;
+                for (let i = 0; i < Math.min(currentData.length, 10); i++) {
+                    if (typeof currentData[i][variable] !== 'number') {
+                        allNumeric = false;
+                        break;
+                    }
+                }
+                
+                const item = document.createElement('li');
+                item.className = 'variable-item';
+                item.draggable = true;
+                item.dataset.variable = variable;
+                item.dataset.type = allNumeric ? 'numeric' : 'text';
+                
+                const icon = allNumeric ? '🔢' : '📝';
+                const typeLabel = allNumeric ? '数值' : '文本';
+                
+                item.innerHTML = `
+                    <span class="variable-icon">${icon}</span>
+                    <span class="variable-name">${variable}</span>
+                    <span class="variable-type">(${typeLabel})</span>
+                `;
+                
+                // 添加拖拽事件
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                
+                container.appendChild(item);
+                
+                console.log(`添加变量 ${index + 1}: ${variable} (${typeLabel})`);
+            });
+            
+            // 设置拖放区域
+            setupDropZone();
+            
+            updateStatus(`✅ 检测到 ${variables.length} 个变量（数值型：${Array.from(container.children).filter(child => child.dataset.type === 'numeric').length}个）`);
+        }
+
+        // 设置拖放区域
+        function setupDropZone() {
+            const dropZone = document.getElementById('chart-drop-zone');
+            const selectedVariablesList = document.getElementById('selected-variables');
+            
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            
+            selectedVariablesList.addEventListener('dragover', handleDragOver);
+            selectedVariablesList.addEventListener('drop', handleDrop);
+            selectedVariablesList.addEventListener('dragleave', handleDragLeave);
+        }
+
+        // 拖拽开始
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.textContent);
+        }
+
+        // 拖拽结束
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            if (e.target.classList.contains('drop-zone') || e.target.classList.contains('variable-list')) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        // 拖拽经过
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        // 拖拽离开
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        // 拖拽放下
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            if (!draggedElement) return;
+            
+            const selectedVariablesList = document.getElementById('selected-variables');
+            const variableText = draggedElement.textContent;
+            
+            // 检查是否已存在
+            const existingItems = selectedVariablesList.querySelectorAll('.variable-item');
+            for (let item of existingItems) {
+                if (item.textContent.includes(variableText.replace(/[🔢📝]\s/, ''))) {
+                    return; // 已存在，不重复添加
+                }
+            }
+            
+            // 添加到已选变量列表
+            const li = document.createElement('li');
+            li.className = 'variable-item';
+            li.textContent = variableText;
+            
+            // 添加删除按钮
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '❌';
+            deleteBtn.style.cssText = 'float: right; background: none; border: none; cursor: pointer; margin-left: 10px; padding: 0; width: auto;';
+            deleteBtn.onclick = function() {
+                li.remove();
+            };
+            li.appendChild(deleteBtn);
+            
+            selectedVariablesList.appendChild(li);
+        }
+
+        // 更新图表类型
+        function updateChartType() {
+            const chartType = document.getElementById('chartType').value;
+            updateStatus(`📊 已切换到${getChartTypeName(chartType)}模式`);
+        }
+
+        // 获取图表类型名称
+        function getChartTypeName(type) {
+            const names = {
+                'bar': '柱状图',
+                'line': '折线图',
+                'pie': '饼图',
+                'scatter': '散点图',
+                'scatter3d': '3D散点图',
+                'surface': '3D曲面图',
+                'bubble3d': '3D气泡图'
+            };
+            return names[type] || type;
+        }
+
+        // 生成图表
+        function generateChart() {
+            if (!currentData) {
+                updateStatus('❌ 请先上传数据或使用示例数据');
+                return;
+            }
+            
+            const selectedVariablesList = document.getElementById('selected-variables');
+            const selectedItems = selectedVariablesList.querySelectorAll('.variable-item');
+            
+            if (selectedItems.length === 0) {
+                updateStatus('❌ 请先拖拽变量到图表变量区域');
+                return;
+            }
+            
+            const chartType = document.getElementById('chartType').value;
+            
+            try {
+                // 隐藏加载状态
+                document.getElementById('loading').style.display = 'none';
+                
+                // 判断是否为3D图表
+                if (['scatter3d', 'surface', 'bubble3d'].includes(chartType)) {
+                    // 3D图表使用Plotly
+                    document.getElementById('chartCanvas').style.display = 'none';
+                    const plotlyDiv = document.getElementById('plotlyChart') || createPlotlyDiv();
+                    plotlyDiv.style.display = 'block';
+                    
+                    // 准备3D图表数据
+                    const plotlyData = preparePlotlyData(selectedItems, chartType);
+                    const layout = preparePlotlyLayout(chartType, selectedItems);
+                    
+                    // 创建3D图表
+                    Plotly.newPlot(plotlyDiv, plotlyData, layout, {
+                        responsive: true,
+                        displayModeBar: true,
+                        displaylogo: false,
+                        modeBarButtonsToRemove: ['pan2d', 'select2d', 'lasso2d', 'resetScale2d']
+                    });
+                    
+                    updateStatus(`✅ 成功生成${getChartTypeName(chartType)}！可拖动旋转查看3D效果`);
+                } else {
+                    // 2D图表使用Chart.js
+                    const existingPlotly = document.getElementById('plotlyChart');
+                    if (existingPlotly) {
+                        existingPlotly.style.display = 'none';
+                    }
+                    
+                    document.getElementById('chartCanvas').style.display = 'block';
+                    
+                    // 销毁现有图表
+                    if (currentChart) {
+                        currentChart.destroy();
+                    }
+                    
+                    // 准备图表数据
+                    const chartData = prepareChartData(selectedItems, chartType);
+                    
+                    // 创建图表
+                    const ctx = document.getElementById('chartCanvas').getContext('2d');
+                    currentChart = new Chart(ctx, chartData);
+                    
+                    updateStatus(`✅ 成功生成${getChartTypeName(chartType)}！`);
+                }
+            } catch (error) {
+                updateStatus(`❌ 图表生成失败：${error.message}`);
+                console.error('图表生成错误:', error);
+            }
+        }
+
+        // 准备图表数据
+        function prepareChartData(selectedItems, chartType) {
+            const variables = Array.from(selectedItems).map(item => 
+                item.textContent.replace('❌', '').trim()
+            );
+            
+            const categoryVar = variables.find(v => v.includes('📝'))?.replace('📝', '').trim();
+            const numericVars = variables
+                .filter(v => v.includes('🔢'))
+                .map(v => v.replace('🔢', '').trim());
+            
+            let labels, datasets;
+            
+            if (chartType === 'scatter') {
+                if (numericVars.length < 2) {
+                    throw new Error('散点图需要至少2个数值变量');
+                }
+                
+                datasets = [{
+                    label: `${numericVars[0]} vs ${numericVars[1]}`,
+                    data: currentData.map(d => ({
+                        x: parseFloat(d[numericVars[0]]) || 0,
+                        y: parseFloat(d[numericVars[1]]) || 0
+                    })),
+                    backgroundColor: 'rgba(54, 209, 220, 0.8)',
+                    borderColor: 'rgba(54, 209, 220, 1)',
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }];
+                
+                return {
+                    type: 'scatter',
+                    data: { datasets },
+                    options: getChartOptions('scatter', `${numericVars[1]} vs ${numericVars[0]}`)
+                };
+            } else {
+                if (!categoryVar || numericVars.length === 0) {
+                    throw new Error('请选择至少1个分类变量和1个数值变量');
+                }
+                
+                labels = currentData.map(d => d[categoryVar]);
+                datasets = numericVars.map((variable, index) => {
+                    const data = currentData.map(d => {
+                        const value = d[variable];
+                        return typeof value === 'number' ? value : parseFloat(value) || 0;
+                    });
+                    
+                    const colors = [
+                        'rgba(54, 209, 220, 0.8)',
+                        'rgba(91, 134, 229, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(255, 206, 86, 0.8)'
+                    ];
+                    
+                    return {
+                        label: variable,
+                        data: data,
+                        backgroundColor: chartType === 'pie' ? colors.slice(0, data.length) : colors[index % colors.length],
+                        borderColor: chartType === 'pie' ? '#ffffff' : colors[index % colors.length].replace('0.8', '1'),
+                        borderWidth: chartType === 'pie' ? 2 : 1
+                    };
+                });
+                
+                return {
+                    type: chartType,
+                    data: { labels, datasets },
+                    options: getChartOptions(chartType, `${categoryVar} - ${numericVars.join(', ')}`)
+                };
+            }
+        }
+
+        // 获取图表配置
+        function getChartOptions(chartType, title) {
+            const baseOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: chartType === 'pie' || true,
+                        position: chartType === 'pie' ? 'right' : 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            };
+            
+            if (chartType !== 'pie') {
+                baseOptions.scales = {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                };
+            }
+            
+            return baseOptions;
+        }
+
+        // 页面加载完成初始化
+        window.addEventListener('load', function() {
+            updateStatus('✅ 全新版本已就绪 - 请上传数据开始');
+        });
+    </script>
+</body>
+    
+    <script>
+        // 页面初始化检查
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 页面加载完成');
+            
+            // 检查关键元素是否存在
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('uploadButton');
+            const debugDiv = document.getElementById('uploadDebug');
+            
+            console.log('文件输入元素：', fileInput ? '✅ 找到' : '❌ 未找到');
+            console.log('上传按钮：', uploadButton ? '✅ 找到' : '❌ 未找到');
+            console.log('调试区域：', debugDiv ? '✅ 找到' : '❌ 未找到');
+            
+            if (fileInput) {
+                console.log('文件输入元素类型：', fileInput.type);
+                console.log('文件输入元素accept：', fileInput.accept);
+                
+                // 添加额外的事件监听器
+                fileInput.addEventListener('change', function(e) {
+                    console.log('🎯 change事件触发');
+                });
+                
+                fileInput.addEventListener('click', function(e) {
+                    console.log('🎯 click事件触发');
+                });
+            }
+            
+            if (uploadButton) {
+                uploadButton.addEventListener('click', function(e) {
+                    console.log('🎯 上传按钮被点击');
+                    if (fileInput) {
+                        console.log('🎯 触发文件选择');
+                        fileInput.click();
+                    } else {
+                        console.error('❌ 找不到文件输入元素');
+                        alert('文件上传功能暂时不可用');
+                    }
+                });
+            }
+            
+            // 初始化调试信息
+            if (debugDiv) {
+                debugDiv.innerHTML = '✅ 文件上传系统已初始化<br>';
+            }
+        });
+
+        // 创建Plotly图表容器
+        function createPlotlyDiv() {
+            const plotlyDiv = document.createElement('div');
+            plotlyDiv.id = 'plotlyChart';
+            plotlyDiv.style.cssText = 'width: 100%; height: 500px; margin-top: 20px;';
+            
+            const chartContainer = document.querySelector('.chart-container');
+            chartContainer.appendChild(plotlyDiv);
+            
+            return plotlyDiv;
+        }
+
+        // 准备Plotly 3D图表数据
+        function preparePlotlyData(selectedItems, chartType) {
+            const variables = Array.from(selectedItems).map(item => 
+                item.textContent.replace('❌', '').trim()
+            );
+            
+            const numericVars = variables
+                .filter(v => v.includes('🔢'))
+                .map(v => v.replace('🔢', '').trim());
+            
+            if (chartType === 'scatter3d') {
+                if (numericVars.length < 3) {
+                    throw new Error('3D散点图需要至少3个数值变量（X、Y、Z轴）');
+                }
+                
+                return [{
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: currentData.map(d => parseFloat(d[numericVars[0]]) || 0),
+                    y: currentData.map(d => parseFloat(d[numericVars[1]]) || 0),
+                    z: currentData.map(d => parseFloat(d[numericVars[2]]) || 0),
+                    marker: {
+                        size: 8,
+                        color: currentData.map(d => parseFloat(d[numericVars[3]]) || 0),
+                        colorscale: 'Viridis',
+                        showscale: true,
+                        colorbar: {
+                            title: numericVars[3] || '数值'
+                        }
+                    },
+                    text: currentData.map((d, i) => `数据点 ${i+1}<br>${numericVars.slice(0, 3).map(v => `${v}: ${d[v]}`).join('<br>')}`),
+                    hovertemplate: '%{text}<extra></extra>'
+                }];
+            }
+            
+            if (chartType === 'surface') {
+                if (numericVars.length < 3) {
+                    throw new Error('3D曲面图需要至少3个数值变量');
+                }
+                
+                // 为曲面图创建网格数据
+                const xData = [...new Set(currentData.map(d => d[numericVars[0]]))].sort((a, b) => a - b);
+                const yData = [...new Set(currentData.map(d => d[numericVars[1]]))].sort((a, b) => a - b);
+                
+                const zData = [];
+                for (let i = 0; i < yData.length; i++) {
+                    const row = [];
+                    for (let j = 0; j < xData.length; j++) {
+                        const point = currentData.find(d => 
+                            d[numericVars[0]] == xData[j] && d[numericVars[1]] == yData[i]
+                        );
+                        row.push(point ? parseFloat(point[numericVars[2]]) || 0 : 0);
+                    }
+                    zData.push(row);
+                }
+                
+                return [{
+                    type: 'surface',
+                    x: xData,
+                    y: yData,
+                    z: zData,
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    colorbar: {
+                        title: numericVars[2]
+                    }
+                }];
+            }
+            
+            if (chartType === 'bubble3d') {
+                if (numericVars.length < 4) {
+                    throw new Error('3D气泡图需要至少4个数值变量（X、Y、Z坐标和气泡大小）');
+                }
+                
+                return [{
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: currentData.map(d => parseFloat(d[numericVars[0]]) || 0),
+                    y: currentData.map(d => parseFloat(d[numericVars[1]]) || 0),
+                    z: currentData.map(d => parseFloat(d[numericVars[2]]) || 0),
+                    marker: {
+                        size: currentData.map(d => {
+                            const size = parseFloat(d[numericVars[3]]) || 5;
+                            return Math.max(3, Math.min(20, size)); // 限制气泡大小
+                        }),
+                        color: currentData.map(d => parseFloat(d[numericVars[4]]) || 0),
+                        colorscale: 'Rainbow',
+                        showscale: true,
+                        colorbar: {
+                            title: numericVars[4] || '颜色'
+                        },
+                        sizemode: 'diameter',
+                        opacity: 0.7
+                    },
+                    text: currentData.map((d, i) => {
+                        return `数据点 ${i+1}<br>` +
+                               `${numericVars[0]}: ${d[numericVars[0]]}<br>` +
+                               `${numericVars[1]}: ${d[numericVars[1]]}<br>` +
+                               `${numericVars[2]}: ${d[numericVars[2]]}<br>` +
+                               `${numericVars[3]}: ${d[numericVars[3]]}`;
+                    }),
+                    hovertemplate: '%{text}<extra></extra>'
+                }];
+            }
+            
+            return [];
+        }
+
+        // 准备Plotly布局
+        function preparePlotlyLayout(chartType, selectedItems) {
+            const variables = Array.from(selectedItems).map(item => 
+                item.textContent.replace('❌', '').trim()
+            );
+            
+            const numericVars = variables
+                .filter(v => v.includes('🔢'))
+                .map(v => v.replace('🔢', '').trim());
+            
+            const baseLayout = {
+                autosize: true,
+                margin: { l: 0, r: 0, b: 0, t: 40 },
+                scene: {
+                    camera: {
+                        eye: { x: 1.5, y: 1.5, z: 1.5 }
+                    },
+                    aspectmode: 'cube'
+                },
+                font: {
+                    family: 'Microsoft YaHei, Arial, sans-serif'
+                }
+            };
+            
+            if (chartType === 'scatter3d' || chartType === 'bubble3d') {
+                baseLayout.scene = {
+                    ...baseLayout.scene,
+                    xaxis: { title: numericVars[0] || 'X轴' },
+                    yaxis: { title: numericVars[1] || 'Y轴' },
+                    zaxis: { title: numericVars[2] || 'Z轴' }
+                };
+            }
+            
+            if (chartType === 'surface') {
+                baseLayout.scene = {
+                    ...baseLayout.scene,
+                    xaxis: { title: numericVars[0] || 'X轴' },
+                    yaxis: { title: numericVars[1] || 'Y轴' },
+                    zaxis: { title: numericVars[2] || 'Z轴' }
+                };
+            }
+            
+            return baseLayout;
+        }
+    </script>
+</html>
